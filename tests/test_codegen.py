@@ -30,6 +30,27 @@ done:   RETURN_CONST (None)
 """
 
 
+# 3.12 cleans the exhausted iterator up inside END_FOR; 3.13 and later leave
+# that to the POP_TOP (POP_ITER from 3.14) that follows it.
+FOR_LOOP_END_FOR_POPS = """
+        LOAD_CONST ((1, 2, 3))
+        GET_ITER
+loop:   FOR_ITER done
+        STORE_NAME n
+        JUMP_BACKWARD loop
+done:   END_FOR
+        RETURN_CONST (None)
+"""
+
+FOR_LOOP_POP_TOP_POPS = FOR_LOOP_END_FOR_POPS.replace(
+    "done:   END_FOR", "done:   END_FOR\n        POP_TOP"
+)
+
+FOR_LOOP_POP_ITER_POPS = FOR_LOOP_END_FOR_POPS.replace(
+    "done:   END_FOR", "done:   END_FOR\n        POP_ITER"
+)
+
+
 class GeneratedSourceTests(unittest.TestCase):
     def test_generated_source_is_valid_python(self) -> None:
         for source in (HELLO, LOOP):
@@ -97,6 +118,32 @@ class UnsupportedOpcodeTests(unittest.TestCase):
         result = assemble(HELLO, options=CodegenOptions(source_name=name))
         module = ast.parse(result.python_source)
         self.assertIn(name, ast.get_docstring(module) or "")
+
+    def test_a_for_loop_leaves_the_stack_empty(self) -> None:
+        # Whichever opcode owns the cleanup, the exhausted iterator must be
+        # popped exactly once.
+        for source in (
+            FOR_LOOP_END_FOR_POPS,
+            FOR_LOOP_POP_TOP_POPS,
+            FOR_LOOP_POP_ITER_POPS,
+        ):
+            with self.subTest(source=source.strip().splitlines()[-2].strip()):
+                namespace = assemble(source).execute()
+                self.assertEqual(namespace["n"], 3)
+
+    def test_only_one_opcode_pops_the_exhausted_iterator(self) -> None:
+        for source, expected in (
+            (FOR_LOOP_END_FOR_POPS, "_st.pop()"),
+            (FOR_LOOP_POP_TOP_POPS, "pass"),
+            (FOR_LOOP_POP_ITER_POPS, "pass"),
+        ):
+            with self.subTest(expected=expected):
+                lines = [
+                    line.strip()
+                    for line in assemble(source).python_source.splitlines()
+                ]
+                index = lines.index("# done: END_FOR")
+                self.assertEqual(lines[index + 1], expected)
 
     def test_unreachable_handler_becomes_a_stub(self) -> None:
         source = """
