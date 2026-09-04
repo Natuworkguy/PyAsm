@@ -38,10 +38,9 @@ version = { attr = "pyasm.__version__" }
 [project.scripts]
 pyasm = "pyasm.cli:main"
 
-# TODO
-# [project.urls]
-# Homepage = "https://github.com/Natuworkguy/pyasm"
-# Issues = "https://github.com/Natuworkguy/pyasm/issues"
+[project.urls]
+Homepage = "https://github.com/Natuworkguy/PyAsm"
+Issues = "https://github.com/Natuworkguy/PyAsm/issues"
 
 [tool.setuptools]
 packages = ["pyasm"]
