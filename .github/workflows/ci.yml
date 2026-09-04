@@ -41,7 +41,7 @@ jobs:
 
   test-linux:
     name: Test (Linux)
-    needs: [lint-ruff, lint-flake8, lint-bandit]
+    needs: [lint-ruff, lint-flake8]
     runs-on: ubuntu-latest
     env:
       NO_COMMAND_CONFIRMATION: '1'
@@ -65,7 +65,7 @@ jobs:
 
   test-windows:
     name: Test (Windows)
-    needs: [lint-ruff, lint-flake8, lint-bandit]
+    needs: [lint-ruff, lint-flake8]
     runs-on: windows-latest
     env:
       NO_COMMAND_CONFIRMATION: '1'
@@ -89,7 +89,7 @@ jobs:
 
   test-macos:
     name: Test (macOS)
-    needs: [lint-ruff, lint-flake8, lint-bandit]
+    needs: [lint-ruff, lint-flake8]
     runs-on: macos-latest
     env:
       NO_COMMAND_CONFIRMATION: '1'
