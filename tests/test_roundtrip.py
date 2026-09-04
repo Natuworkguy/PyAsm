@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import sys
 import unittest
 from contextlib import redirect_stdout
 
@@ -65,6 +66,11 @@ print(max(*rest, 0), sum(rest))
 }
 
 
+# PEP 709 inlined comprehensions in 3.12; before that they disassemble to a
+# LOAD_CONST of a nested <listcomp> code object, which PyAsm cannot assemble.
+INLINED_FROM_312 = {"comprehension"}
+
+
 def run_python(source: str) -> str:
     buffer = io.StringIO()
     namespace: dict = {"__name__": "__main__"}
@@ -88,6 +94,11 @@ class RoundTripTests(unittest.TestCase):
     def test_snippets_behave_identically(self) -> None:
         for name, snippet in SNIPPETS.items():
             with self.subTest(snippet=name):
+                if name in INLINED_FROM_312 and sys.version_info < (3, 12):
+                    self.skipTest(
+                        "before 3.12 a comprehension compiles to a nested "
+                        "code object, which is out of scope (PEP 709)"
+                    )
                 self.assertEqual(run_pyasm(snippet), run_python(snippet))
 
     def test_disassembly_is_reported_as_valid(self) -> None:

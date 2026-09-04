@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import unittest
 
 from pyasm import AssemblyError, CodegenOptions, assemble
@@ -88,6 +89,14 @@ class UnsupportedOpcodeTests(unittest.TestCase):
                 'LOAD_CONST 1 (<code object f at 0x0, file "x", line 1>)'
             )
         self.assertIn("cannot assemble the constant", str(caught.exception))
+
+    def test_a_windows_path_survives_the_header_docstring(self) -> None:
+        # A backslash in the source name must not become an escape in the
+        # generated module's docstring.
+        name = r"C:\Users\dev\AppData\Local\Temp\hello.pya"
+        result = assemble(HELLO, options=CodegenOptions(source_name=name))
+        module = ast.parse(result.python_source)
+        self.assertIn(name, ast.get_docstring(module) or "")
 
     def test_unreachable_handler_becomes_a_stub(self) -> None:
         source = """
