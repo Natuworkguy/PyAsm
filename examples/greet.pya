@@ -1,6 +1,6 @@
-# Reads sys.argv, so it shows how arguments reach an assembled program:
-#
-#   pyasm run examples/greet.pya -- PyAsm fans
+; Reads sys.argv, so it shows how arguments reach an assembled program:
+;
+;   pyasm run examples/greet.pya -- PyAsm fans
 
    0           0  RESUME                        0
 

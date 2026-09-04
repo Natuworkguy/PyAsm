@@ -1,5 +1,5 @@
-# FizzBuzz, disassembled from Python and assembled back by PyAsm.
-# Regenerate with: pyasm dis fizzbuzz.py -o fizzbuzz.pya
+; FizzBuzz, disassembled from Python and assembled back by PyAsm.
+; Regenerate with: pyasm dis fizzbuzz.py -o fizzbuzz.pya
 
    0           0  RESUME                        0
 

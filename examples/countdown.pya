@@ -1,7 +1,7 @@
-# Hand written PyAsm: labels instead of byte offsets, and arguments written
-# plainly instead of as an index into a constant table.
-#
-#   pyasm run examples/countdown.pya
+; Hand written PyAsm: labels instead of byte offsets, and arguments written
+; plainly instead of as an index into a constant table.
+;
+;   pyasm run examples/countdown.pya
 
         LOAD_CONST 3
         STORE_NAME n
