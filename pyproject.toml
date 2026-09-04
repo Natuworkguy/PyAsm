@@ -23,9 +23,13 @@ classifiers = [
     "Topic :: Software Development :: Assemblers",
     "Topic :: Software Development :: Interpreters",
 ]
-dependencies = [
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
     "bandit>=1.9.4",
     "flake8>=7.3.0",
+    "pytest>=9.1.1",
 ]
 
 [tool.setuptools.dynamic]
