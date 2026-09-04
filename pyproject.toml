@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyasm"
+name = "pyasm-lang"
 dynamic = ["version"]
 description = "A Python based language that reads like assembly: it runs disassembled Python."
 readme = "README.md"
