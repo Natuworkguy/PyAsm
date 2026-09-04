@@ -1,0 +1,38 @@
+# Reads sys.argv, so it shows how arguments reach an assembled program:
+#
+#   pyasm run examples/greet.pya -- PyAsm fans
+
+   0           0  RESUME                        0
+
+   1           2  LOAD_SMALL_INT                0
+               4  LOAD_CONST                    1  (('argv',))
+               6  IMPORT_NAME                   0  (sys)
+               8  IMPORT_FROM                   1  (argv)
+              10  STORE_NAME                    1  (argv)
+              12  POP_TOP
+
+   3          14  LOAD_CONST                    2  (' ')
+              16  LOAD_ATTR                     5  (join + NULL|self)
+              36  LOAD_NAME                     1  (argv)
+              38  LOAD_CONST                    3  (slice(1, None, None))
+              40  BINARY_OP                    26  ([])
+              52  CALL                          1
+              60  COPY                          1
+              62  TO_BOOL
+              70  POP_JUMP_IF_TRUE              3  (to L1)
+              74  NOT_TAKEN
+              76  POP_TOP
+              78  LOAD_CONST                    4  ('world')
+       L1:    80  STORE_NAME                    3  (who)
+
+   4          82  LOAD_NAME                     4  (print)
+              84  PUSH_NULL
+              86  LOAD_CONST                    5  ('Hello, ')
+              88  LOAD_NAME                     3  (who)
+              90  FORMAT_SIMPLE
+              92  LOAD_CONST                    6  ('!')
+              94  BUILD_STRING                  3
+              96  CALL                          1
+             104  POP_TOP
+             106  LOAD_CONST                    7  (None)
+             108  RETURN_VALUE

@@ -1,0 +1,41 @@
+# Hand written PyAsm: labels instead of byte offsets, and arguments written
+# plainly instead of as an index into a constant table.
+#
+#   pyasm run examples/countdown.pya
+
+        LOAD_CONST 3
+        STORE_NAME n
+
+        LOAD_SMALL_INT 0
+        LOAD_CONST None
+        IMPORT_NAME time
+        STORE_NAME time
+
+loop:   LOAD_NAME n
+        TO_BOOL
+        POP_JUMP_IF_FALSE done
+
+        LOAD_NAME print
+        PUSH_NULL
+        LOAD_NAME n
+        CALL 1
+        POP_TOP
+
+        LOAD_NAME n
+        LOAD_CONST 1
+        BINARY_OP (-)
+        STORE_NAME n
+        LOAD_NAME time
+        LOAD_ATTR sleep
+        PUSH_NULL
+        LOAD_CONST 1
+        CALL 1
+        POP_TOP
+        JUMP_BACKWARD loop
+
+done:   LOAD_NAME print
+        PUSH_NULL
+        LOAD_CONST ('Liftoff!')
+        CALL 1
+        POP_TOP
+        RETURN_CONST (None)

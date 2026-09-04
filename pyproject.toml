@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyasm"
+dynamic = ["version"]
+description = "A Python based language that reads like assembly: it runs disassembled Python."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Nathan C. (Natuworkguy)" }, { name = "PyAsm Community" }]
+keywords = ["assembly", "bytecode", "dis", "disassembler", "interpreter"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Assemblers",
+    "Topic :: Software Development :: Interpreters",
+]
+dependencies = []
+
+[tool.setuptools.dynamic]
+version = { attr = "pyasm.__version__" }
+
+[project.scripts]
+pyasm = "pyasm.cli:main"
+
+# TODO
+# [project.urls]
+# Homepage = "https://github.com/Natuworkguy/pyasm"
+# Issues = "https://github.com/Natuworkguy/pyasm/issues"
+
+[tool.setuptools]
+packages = ["pyasm"]
+
+[tool.setuptools.package-data]
+pyasm = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 79
+target-version = "py311"
+
+[tool.ruff.lint]
+# Annotations are spelled Optional[X] rather than X | None by choice, so the
+# rules that rewrite them stay off.
+ignore = ["UP007", "UP045"]

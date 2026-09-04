@@ -1,0 +1,6 @@
+LOAD_GLOBAL (print + NULL)
+LOAD_CONST ('Hello, World!')
+CALL 1
+POP_TOP
+LOAD_CONST (None)
+RETURN_VALUE
