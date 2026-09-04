@@ -23,7 +23,10 @@ classifiers = [
     "Topic :: Software Development :: Assemblers",
     "Topic :: Software Development :: Interpreters",
 ]
-dependencies = []
+dependencies = [
+    "bandit>=1.9.4",
+    "flake8>=7.3.0",
+]
 
 [tool.setuptools.dynamic]
 version = { attr = "pyasm.__version__" }
