@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import sys
 import tempfile
 import traceback
@@ -20,23 +21,85 @@ __all__ = ["build_parser", "main"]
 
 COMMANDS = ("run", "dump", "dis", "check", "opcodes", "compile")
 
-_EPILOG = """\
-examples:
-  pyasm main.pya                     assemble and run a program
-  pyasm run main.pya --dump-python out.py
-                                     run it and save the generated Python
-  pyasm dump main.pya -o out.py      only write the generated Python
-  pyasm dis script.py -o script.pya  disassemble Python into .pya assembly
-  pyasm check main.pya               assemble without running
-  pyasm compile main.pya -o main     build a standalone executable
-"""
+# Falls back to argparse's own 3.14 theme when it's available so the epilog
+# matches the colours already used for "usage:", "options:", and friends.
+_FALLBACK_THEME = {
+    "heading": "\x1b[1;34m",
+    "prog": "\x1b[1;35m",
+    "action": "\x1b[1;32m",
+    "long_option": "\x1b[1;36m",
+    "short_option": "\x1b[1;32m",
+    "reset": "\x1b[0m",
+}
+
+
+def _epilog_theme() -> Optional[dict[str, str]]:
+    # ``_colorize`` is a private, version-dependent CPython module (argparse
+    # theming landed there in 3.14), so it's resolved dynamically rather than
+    # with a static import that type checkers would try to verify.
+    try:
+        colorize = importlib.import_module("_colorize")
+    except ImportError:
+        return None
+    if not colorize.can_colorize():
+        return None
+    try:
+        theme = colorize.get_theme().argparse
+        return {
+            "heading": theme.heading,
+            "prog": theme.prog,
+            "action": theme.action,
+            "long_option": theme.long_option,
+            "short_option": theme.short_option,
+            "reset": theme.reset,
+        }
+    except AttributeError:
+        return _FALLBACK_THEME
+
+
+def _build_epilog() -> str:
+    theme = _epilog_theme()
+
+    def c(key: str, text: str) -> str:
+        return f"{theme[key]}{text}{theme['reset']}" if theme else text
+
+    prog = c("prog", "pyasm")
+    lines = [
+        c("heading", "examples:"),
+        f"  {prog} main.pya                     assemble and run a program",
+        (
+            f"  {prog} {c('action', 'run')} main.pya "
+            + c("long_option", "--dump-python")
+            + " out.py"
+        ),
+        "                                     run it and save the generated"
+        + " Python",
+        (
+            f"  {prog} {c('action', 'dump')} main.pya "
+            + c("short_option", "-o")
+            + " out.py      only write the generated Python"
+        ),
+        (
+            f"  {prog} {c('action', 'dis')} script.py "
+            + c("short_option", "-o")
+            + " script.pya  disassemble Python into .pya assembly"
+        ),
+        f"  {prog} {c('action', 'check')} main.pya               assemble"
+        + " without running",
+        (
+            f"  {prog} {c('action', 'compile')} main.pya "
+            + c("short_option", "-o")
+            + " main     build a standalone executable"
+        ),
+    ]
+    return "\n".join(lines)
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="pyasm",
         description="Assemble and run disassembled Python.",
-        epilog=_EPILOG,
+        epilog=_build_epilog(),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
