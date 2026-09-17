@@ -23,13 +23,18 @@ classifiers = [
     "Topic :: Software Development :: Assemblers",
     "Topic :: Software Development :: Interpreters",
 ]
-dependencies = []
+dependencies = [
+    "types-pyinstaller[dev]>=6.22.1.20260827",
+]
 
 [project.optional-dependencies]
 dev = [
     "bandit>=1.9.4",
     "flake8>=7.3.0",
     "pytest>=9.1.1",
+]
+compile = [
+    "pyinstaller>=6.0",
 ]
 
 [tool.setuptools.dynamic]

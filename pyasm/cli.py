@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import argparse
 import sys
+import tempfile
 import traceback
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Optional
 
 from . import __version__
@@ -16,7 +18,7 @@ from .errors import AssemblyError, PyAsmError
 
 __all__ = ["build_parser", "main"]
 
-COMMANDS = ("run", "dump", "dis", "check", "opcodes")
+COMMANDS = ("run", "dump", "dis", "check", "opcodes", "compile")
 
 _EPILOG = """\
 examples:
@@ -26,6 +28,7 @@ examples:
   pyasm dump main.pya -o out.py      only write the generated Python
   pyasm dis script.py -o script.pya  disassemble Python into .pya assembly
   pyasm check main.pya               assemble without running
+  pyasm compile main.pya -o main     build a standalone executable
 """
 
 
@@ -103,6 +106,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="omit byte offsets from the output",
     )
     dis.set_defaults(func=_cmd_dis)
+
+    compile_ = subparsers.add_parser(
+        "compile",
+        help="compile a .pya file into a standalone executable",
+        description="Assemble a .pya file and compile the generated Python "
+        "into a single-file executable with PyInstaller.",
+    )
+    _add_assemble_arguments(compile_)
+    compile_.add_argument(
+        "-o",
+        "--output",
+        metavar="PATH",
+        help="path of the executable to produce (default: FILE's stem)",
+    )
+    compile_.set_defaults(func=_cmd_compile)
 
     opcodes = subparsers.add_parser(
         "opcodes",
@@ -203,6 +221,48 @@ def _cmd_check(args: argparse.Namespace) -> int:
     print(f"pyasm: {args.file} is valid ({count} instruction{plural})")
     if args.dump_python:
         _write(args.dump_python, result.python_source, "generated Python")
+    return 0
+
+
+def _cmd_compile(args: argparse.Namespace) -> int:
+    try:
+        import PyInstaller.__main__
+    except ImportError:
+        print(
+            "pyasm: error: 'compile' needs PyInstaller "
+            "(pip install pyasm-lang[compile])",
+            file=sys.stderr,
+        )
+        return 2
+
+    result = assemble_file(args.file, options=_options(args))
+    _report(result)
+    if args.dump_python:
+        _write(args.dump_python, result.python_source, "generated Python")
+
+    output = Path(args.output or Path(args.file).stem)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.TemporaryDirectory(prefix="pyasm-compile-") as tmp:
+        tmp_path = Path(tmp)
+        script = tmp_path / f"{output.name}.py"
+        script.write_text(result.python_source, encoding="utf-8")
+        try:
+            PyInstaller.__main__.run([
+                str(script),
+                "--onefile",
+                "--name", output.name,
+                "--distpath", str(output.parent),
+                "--workpath", str(tmp_path / "build"),
+                "--specpath", str(tmp_path),
+                "--clean",
+                "--noconfirm",
+            ])
+        except SystemExit as exit_request:
+            if exit_request.code:
+                return int(exit_request.code)
+
+    print(f"pyasm: wrote executable to {output}", file=sys.stderr)
     return 0
 
 
